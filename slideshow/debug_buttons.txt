@@ -1,0 +1,20 @@
+All buttons found:
+  0: Đăng xuất (admin)
+  1: Tổng quan
+  2: Tài khoản
+  3: Danh mục khoản thu
+  4: Đợt thu
+  5: Nghĩa vụ & Thu phí
+  6: Hộ khẩu
+  7: Nhân khẩu
+  8: Biến động cư trú
+  9: Người dùng
+  10: Báo cáo
+  11: Hướng dẫn
+  12: Trước
+  13: Sau
+  14: Tiền mặt: 684.809.543
+  15: Chuyển khoản: 684.756.782
+  16: Thu phí
+  17: Thêm cư dân
+  18: Xem báo cáo
