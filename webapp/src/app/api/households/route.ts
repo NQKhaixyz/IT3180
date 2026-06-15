@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   const floorNo = toSafeInt(body.floorNo);
   const area = toSafeNumber(body.areaM2);
   const parkingSlots = body.parkingSlots == null ? 0 : toSafeInt(body.parkingSlots);
-  if (!body.apartmentNo || !floorNo || !body.ownerName || !body.ownerPhone || !area || area <= 0) {
+  if (!body.apartmentNo || floorNo == null || !body.ownerName || !body.ownerPhone || !area || area <= 0) {
     return apiError("VALIDATION_ERROR", "Invalid household payload", 400);
   }
   const existingApartment = await db.household.findUnique({ where: { apartmentNo: body.apartmentNo } });

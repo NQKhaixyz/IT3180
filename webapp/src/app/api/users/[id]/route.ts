@@ -56,18 +56,19 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       },
       status: true,
       createdAt: true,
-      failedLoginCount: true,
-      lockedUntil: true,
+
     },
   });
 
   if (body.role) {
     const mapped = await db.appRole.findUnique({ where: { code: body.role } });
     if (mapped) {
-      await db.$transaction(async (tx) => {
-        await tx.userRole.deleteMany({ where: { userId } });
-        await tx.userRole.create({ data: { userId, roleId: mapped.id } });
+      const existing = await db.userRole.findUnique({
+        where: { userId_roleId: { userId, roleId: mapped.id } },
       });
+      if (!existing) {
+        await db.userRole.create({ data: { userId, roleId: mapped.id } });
+      }
     }
   }
 

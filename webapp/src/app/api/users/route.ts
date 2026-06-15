@@ -34,8 +34,6 @@ export async function GET(req: NextRequest) {
       },
       status: true,
       createdAt: true,
-      failedLoginCount: true,
-      lockedUntil: true,
     },
   });
   return NextResponse.json(rows);
@@ -101,8 +99,6 @@ export async function POST(req: NextRequest) {
       },
       status: true,
       createdAt: true,
-      failedLoginCount: true,
-      lockedUntil: true,
     },
   });
 

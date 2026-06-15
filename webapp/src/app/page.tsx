@@ -291,15 +291,15 @@ export default function Home() {
     try {
       const [u, h, r, f, p, o, pay, ev, comm, an, roleRows, permRows] = await Promise.all([
         apiGetAllPages<User>(`${API_BASE}/users`).catch(() => []),
-        apiGetAllPages<Household>(`${API_BASE}/households`),
-        apiGetAllPages<Resident>(`${API_BASE}/residents`),
-        apiGetAllPages<FeeType>(`${API_BASE}/fee-types`),
-        apiGetAllPages<FeePeriod>(`${API_BASE}/periods`),
-        apiGetAllPages<Obligation>(`${API_BASE}/obligations`),
-        apiGetAllPages<Payment>(`${API_BASE}/payments`),
-        apiGetAllPages<ResidencyEvent>(`${API_BASE}/residency-events`),
-        apiGetAllPages<CommunicationLog & { household?: Household }>(`${API_BASE}/communication-logs`, 200),
-        apiGet<{ aging: Array<{ label: string; count: number; amount: number }>; collectionByMonth: Array<{ label: string; due: number; paid: number; rate: number }>; byCollector: Array<{ collector: string; amount: number }>; byFloor: Array<{ floor: number; due: number; paid: number; rate: number }>; voluntaryStats: { participatingHouseholds: number; totalHouseholds: number; participationRate: number; totalAmount: number; averageContribution: number } }>(`${API_BASE}/reports/analytics`),
+        apiGetAllPages<Household>(`${API_BASE}/households`).catch(() => []),
+        apiGetAllPages<Resident>(`${API_BASE}/residents`).catch(() => []),
+        apiGetAllPages<FeeType>(`${API_BASE}/fee-types`).catch(() => []),
+        apiGetAllPages<FeePeriod>(`${API_BASE}/periods`).catch(() => []),
+        apiGetAllPages<Obligation>(`${API_BASE}/obligations`).catch(() => []),
+        apiGetAllPages<Payment>(`${API_BASE}/payments`).catch(() => []),
+        apiGetAllPages<ResidencyEvent>(`${API_BASE}/residency-events`).catch(() => []),
+        apiGetAllPages<CommunicationLog & { household?: Household }>(`${API_BASE}/communication-logs`, 200).catch(() => []),
+        apiGet<{ aging: Array<{ label: string; count: number; amount: number }>; collectionByMonth: Array<{ label: string; due: number; paid: number; rate: number }>; byCollector: Array<{ collector: string; amount: number }>; byFloor: Array<{ floor: number; due: number; paid: number; rate: number }>; voluntaryStats: { participatingHouseholds: number; totalHouseholds: number; participationRate: number; totalAmount: number; averageContribution: number } }>(`${API_BASE}/reports/analytics`).catch(() => null),
         apiGet<AppRole[]>(`${API_BASE}/roles`).catch(() => []),
         apiGet<PermissionItem[]>(`${API_BASE}/permissions`).catch(() => []),
       ]);
@@ -1132,6 +1132,25 @@ export default function Home() {
     });
   }
 
+  function generateObligations() {
+    void (async () => {
+      setBusy((p) => ({ ...p, ["generate-obligations"]: true }));
+      try {
+        const res = await fetch(`${API_BASE}/obligations/generate`, { method: "POST" });
+        if (!res.ok) throw new Error((await res.json()).message || "Generate failed");
+        const data = await res.json() as { created: number };
+        notify("success", l(lang, `Đã sinh ${data.created} nghĩa vụ thu`, `Generated ${data.created} obligations`));
+        await refreshAllFromApi();
+        await refreshAuditLogs();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : l(lang, "Sinh nghĩa vụ thu thất bại", "Failed to generate obligations");
+        notify("error", msg);
+      } finally {
+        setBusy((p) => ({ ...p, ["generate-obligations"]: false }));
+      }
+    })();
+  }
+
   function savePeriodEdit() {
     if (!editingPeriodId) return;
     const month = Number(newPeriodMonth);
@@ -1751,6 +1770,7 @@ export default function Home() {
                 setNewPeriodYear(String(p.year));
                 setNewPeriodStatus(p.status);
               }}>{l(lang, "Sửa", "Edit")}</button><button className="btn-danger" onClick={() => deletePeriod(p.id)}>{l(lang, "Xóa", "Delete")}</button></div></td></tr>)}</tbody></table></div>
+              <button className="btn-primary mt-3" disabled={busy["generate-obligations"] ?? false} onClick={generateObligations}>{l(lang, "Sinh nghĩa vụ thu", "Generate obligations")}</button>
             </section>
           )}
 

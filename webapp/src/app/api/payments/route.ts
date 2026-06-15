@@ -1,7 +1,7 @@
+import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth, requirePermission } from "@/lib/auth";
-import { writeAudit } from "@/lib/audit";
 import { apiError } from "@/lib/errors";
 import { parsePagination } from "@/lib/validation";
 
@@ -45,10 +45,8 @@ export async function POST(req: NextRequest) {
   if (applied <= 0) return apiError("NO_REMAINING", "No remaining amount to collect", 400);
 
   const result = await db.$transaction(async (tx) => {
-    const latest = await tx.payment.findFirst({ orderBy: { id: "desc" } });
-    const nextNo = (latest?.id ?? 0) + 1;
     const now = new Date();
-    const receiptNo = `PT-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}-${String(nextNo).padStart(5, "0")}`;
+    const receiptNo = `PT-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}-${randomBytes(4).toString("hex").toUpperCase()}`;
 
     const payment = await tx.payment.create({
       data: {
@@ -82,14 +80,6 @@ export async function POST(req: NextRequest) {
     });
 
     return payment;
-  });
-
-  await writeAudit({
-    actorUserId: auth.user!.id,
-    action: "COLLECT_PAYMENT",
-    entity: "PAYMENT",
-    entityId: String(result.id),
-    detail: `Collected payment ${result.receiptNo}`,
   });
 
   return NextResponse.json(result);

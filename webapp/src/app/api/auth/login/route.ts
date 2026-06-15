@@ -38,10 +38,6 @@ export async function POST(req: NextRequest) {
     return apiError("AUTH_INVALID_CREDENTIALS", "Invalid credentials", 401);
   }
 
-  if (user.lockedUntil && user.lockedUntil > new Date()) {
-    return apiError("AUTH_BLOCKED", "Account temporarily locked", 403);
-  }
-
   const ok = verifyPassword(pwd, user.passwordHash);
   if (!ok) {
     const nextFailed = user.failedLoginCount + 1;
@@ -64,7 +60,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (user.status !== "ACTIVE") {
-    return apiError("AUTH_BLOCKED", "Account blocked", 403);
+    return apiError("AUTH_INVALID_CREDENTIALS", "Invalid credentials", 401);
   }
 
   const token = randomBytes(24).toString("hex");

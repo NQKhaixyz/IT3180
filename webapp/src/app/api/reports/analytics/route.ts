@@ -32,7 +32,7 @@ export async function GET() {
   for (const o of obligations) {
     const remaining = Math.max(0, o.amountDue - o.amountPaid);
     if (remaining <= 0) continue;
-    const dueDate = new Date(o.period.year, o.period.month, 0);
+    const dueDate = new Date(o.period.year, o.period.month - 1, 1);
     const days = Math.max(0, diffDays(dueDate, now));
     let idx = 3;
     if (days <= 30) idx = 0;

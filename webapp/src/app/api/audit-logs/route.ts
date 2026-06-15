@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     orderBy: { id: "desc" },
     skip,
     take,
-    include: { actor: true },
+    include: { actor: { select: { id: true, fullName: true } } },
   });
   return NextResponse.json(rows);
 }

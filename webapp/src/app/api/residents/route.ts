@@ -32,6 +32,10 @@ export async function POST(req: NextRequest) {
   if (!body.fullName || !Number.isFinite(body.householdId) || !body.dob || !body.gender || !body.idNo) {
     return apiError("VALIDATION_ERROR", "Invalid resident payload", 400);
   }
+  const existingIdNo = await db.resident.findUnique({ where: { idNo: body.idNo } });
+  if (existingIdNo) {
+    return apiError("DUPLICATE_DATA", "ID number already exists", 409, { field: "idNo" });
+  }
   const row = await db.resident.create({
     data: {
       householdId: body.householdId,

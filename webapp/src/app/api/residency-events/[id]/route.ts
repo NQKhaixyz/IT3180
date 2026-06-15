@@ -23,6 +23,13 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   const fromDate = body.fromDate ? new Date(body.fromDate) : undefined;
   const toDate = body.toDate ? new Date(body.toDate) : undefined;
 
+  if (fromDate && Number.isNaN(fromDate.getTime())) {
+    return apiError("VALIDATION_ERROR", "Invalid from date", 400, { field: "fromDate" });
+  }
+  if (toDate && Number.isNaN(toDate.getTime())) {
+    return apiError("VALIDATION_ERROR", "Invalid to date", 400, { field: "toDate" });
+  }
+
   const row = await db.residencyEvent.update({
     where: { id: eventId },
     data: {

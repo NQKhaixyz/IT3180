@@ -25,6 +25,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     note?: string;
   };
 
+  if (body.collectorName != null && !body.collectorName.trim()) {
+    return apiError("VALIDATION_ERROR", "Collector name cannot be empty", 400, { field: "collectorName" });
+  }
+
   const row = await db.payment.update({
     where: { id: num },
     data: {

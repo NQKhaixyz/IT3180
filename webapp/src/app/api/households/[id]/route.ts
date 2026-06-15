@@ -50,6 +50,11 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (moveInDate && Number.isNaN(moveInDate.getTime())) return apiError("VALIDATION_ERROR", "Invalid move in date", 400, { field: "moveInDate" });
   if (contractEndDate && Number.isNaN(contractEndDate.getTime())) return apiError("VALIDATION_ERROR", "Invalid contract end date", 400, { field: "contractEndDate" });
 
+  if (body.apartmentNo) {
+    const dup = await db.household.findFirst({ where: { apartmentNo: body.apartmentNo, id: { not: num } } });
+    if (dup) return apiError("DUPLICATE_DATA", "Apartment number already exists", 409, { field: "apartmentNo" });
+  }
+
   const row = await db.household.update({
     where: { id: num },
     data: {
