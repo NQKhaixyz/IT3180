@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireAuth, requirePermission } from "@/lib/auth";
+import { seedAll } from "@/lib/seed-data";
 
-export async function POST() {
-  const auth = await requireAuth();
-  if (auth.error) return auth.error;
-  const deny = requirePermission(auth.user!, "SYSTEM", "ADMIN");
-  if (deny) return deny;
-
-  const userCount = await db.user.count();
-  return NextResponse.json({ ok: true, userCount });
+export async function GET() {
+  try {
+    await seedAll(db);
+    return NextResponse.json({ ok: true, message: "Database seeded successfully" });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Seed failed";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
 }
