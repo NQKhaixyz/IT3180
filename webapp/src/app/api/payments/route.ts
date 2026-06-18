@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   if (!obligation) return apiError("NOT_FOUND", "Obligation not found", 404);
 
   const remaining = Math.max(0, obligation.amountDue - obligation.amountPaid);
-  const applied = Math.min(remaining, body.paidAmount);
+  const applied = Math.min(remaining, Math.round(body.paidAmount));
   if (applied <= 0) return apiError("NO_REMAINING", "No remaining amount to collect", 400);
 
   const result = await db.$transaction(async (tx) => {

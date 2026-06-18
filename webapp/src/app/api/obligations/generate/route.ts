@@ -22,7 +22,7 @@ export async function POST() {
         where: { periodId_householdId: { periodId: p.id, householdId: h.id } },
       });
       if (existing) continue;
-      const due = p.feeType.calcMethod === "PER_M2" ? h.areaM2 * p.feeType.rate : p.feeType.rate;
+      const due = Math.round(p.feeType.calcMethod === "PER_M2" ? h.areaM2 * p.feeType.rate : p.feeType.rate);
       await db.obligation.create({
         data: { periodId: p.id, householdId: h.id, amountDue: due, amountPaid: 0 },
       });

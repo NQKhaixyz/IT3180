@@ -689,8 +689,10 @@ export default function Home() {
   }, [tab, paymentView, lang]);
 
   const collectorOptions = useMemo(() => {
-    return Array.from(new Set(payments.map((p) => p.collectorName.trim()).filter((x) => x.length > 0))).sort((a, b) => a.localeCompare(b));
-  }, [payments]);
+    const fromPayments = payments.map((p) => p.collectorName.trim()).filter((x) => x.length > 0);
+    const fromUsers = users.map((u) => u.fullName.trim()).filter((x) => x.length > 0);
+    return Array.from(new Set([...fromPayments, ...fromUsers])).sort((a, b) => a.localeCompare(b));
+  }, [payments, users]);
 
   const payerFilterOptions = useMemo(() => {
     return Array.from(new Set(payments.map((p) => (p.payerName ?? "").trim()).filter((x) => x.length > 0))).sort((a, b) => a.localeCompare(b));
@@ -1820,10 +1822,10 @@ export default function Home() {
               </div>
               <div className="grid gap-2 mt-2 md:grid-cols-3">
                 <div>
-                  <select className="input" value={collectorName} onChange={(e) => { setCollectorName(e.target.value); clearFieldError("collectorName"); }}>
-                    <option value="">{l(lang, "Chọn người thu *", "Select collector *")}</option>
-                    {collectorOptions.map((x) => <option key={x} value={x}>{x}</option>)}
-                  </select>
+                  <input className="input" list="collector-list" value={collectorName} onChange={(e) => { setCollectorName(e.target.value); clearFieldError("collectorName"); }} placeholder={l(lang, "Nhập tên người thu *", "Enter collector name *")} />
+                  <datalist id="collector-list">
+                    {collectorOptions.map((x) => <option key={x} value={x} />)}
+                  </datalist>
                   {fieldErrors.collectorName && <p className="field-error">{fieldErrors.collectorName}</p>}
                 </div>
                 <select className="input" value={payerName} onChange={(e) => setPayerName(e.target.value)}>
