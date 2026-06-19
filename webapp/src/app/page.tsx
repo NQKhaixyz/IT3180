@@ -1799,7 +1799,6 @@ export default function Home() {
                   })}
                 </select>
                 <select className="input" value={selectedPaymentFeeTypeId} onChange={(e) => setSelectedPaymentFeeTypeId(Number(e.target.value))}>
-                  <option value={0}>{l(lang, "Tất cả khoản phí", "All fee types")}</option>
                   {feeTypes.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
                 </select>
                 <select className="input" value={selectedObligationId} onChange={(e) => setSelectedObligationId(Number(e.target.value))}>

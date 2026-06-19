@@ -102,8 +102,8 @@ async function main() {
   };
 
   await grant(adminRole.id, permissionDefs.map((p) => p.code));
-  await grant(accountantRole.id, ["FEE_READ", "FEE_WRITE", "RESIDENT_READ", "RESIDENT_WRITE", "REPORT_READ"]);
-  await grant(leaderRole.id, ["FEE_READ", "FEE_WRITE", "RESIDENT_READ", "RESIDENT_WRITE", "REPORT_READ"]);
+  await grant(accountantRole.id, ["FEE_READ", "FEE_WRITE", "REPORT_READ"]);
+  await grant(leaderRole.id, ["RESIDENT_READ", "RESIDENT_WRITE", "REPORT_READ"]);
 
   await prisma.userRole.createMany({
     data: [

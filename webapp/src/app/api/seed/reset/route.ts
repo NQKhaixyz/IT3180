@@ -63,8 +63,8 @@ export async function POST() {
   const permByCode = new Map(permissions.map((p) => [p.code, p.id] as const));
 
   await db.rolePermission.createMany({ data: permissionDefs.map((p) => ({ roleId: adminRole.id, permissionId: permByCode.get(p.code)! })) });
-  await db.rolePermission.createMany({ data: ["FEE_READ", "FEE_WRITE", "RESIDENT_READ", "REPORT_READ"].map((code) => ({ roleId: accountantRole.id, permissionId: permByCode.get(code)! })) });
-  await db.rolePermission.createMany({ data: ["FEE_READ", "RESIDENT_READ", "RESIDENT_WRITE", "REPORT_READ"].map((code) => ({ roleId: leaderRole.id, permissionId: permByCode.get(code)! })) });
+  await db.rolePermission.createMany({ data: ["FEE_READ", "FEE_WRITE", "REPORT_READ"].map((code) => ({ roleId: accountantRole.id, permissionId: permByCode.get(code)! })) });
+  await db.rolePermission.createMany({ data: ["RESIDENT_READ", "RESIDENT_WRITE", "REPORT_READ"].map((code) => ({ roleId: leaderRole.id, permissionId: permByCode.get(code)! })) });
 
   await db.userRole.createMany({
     data: [
