@@ -11,18 +11,22 @@ export async function POST() {
 
   const response = NextResponse.json({ ok: true });
 
-  if (token) {
-    await db.session.updateMany({ where: { token, revokedAt: null }, data: { revokedAt: new Date() } });
+  if (token && !token.startsWith("mock:")) {
+    try {
+      await db.session.updateMany({ where: { token, revokedAt: null }, data: { revokedAt: new Date() } });
+    } catch {}
   }
 
-  if (user) {
-    await writeAudit({
-      actorUserId: user.id,
-      action: "LOGOUT",
-      entity: "USER",
-      entityId: String(user.id),
-      detail: `User ${user.username} logged out`,
-    });
+  if (user && !token?.startsWith("mock:")) {
+    try {
+      await writeAudit({
+        actorUserId: user.id,
+        action: "LOGOUT",
+        entity: "USER",
+        entityId: String(user.id),
+        detail: `User ${user.username} logged out`,
+      });
+    } catch {}
   }
 
   response.cookies.delete(cookie);

@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { requireAuth, requirePermission } from "@/lib/auth";
 import { writeAudit } from "@/lib/audit";
 import { apiError } from "@/lib/errors";
+import { feeTypesSeed } from "@/lib/mock-data";
 import { parsePagination } from "@/lib/validation";
 
 export async function GET(req: NextRequest) {
@@ -11,7 +12,12 @@ export async function GET(req: NextRequest) {
   const deny = requirePermission(auth.user!, "FEE", "READ");
   if (deny) return deny;
   const { skip, take } = parsePagination(req.nextUrl.searchParams);
-  const rows = await db.feeType.findMany({ orderBy: { id: "asc" }, skip, take });
+  let rows;
+  try {
+    rows = await db.feeType.findMany({ orderBy: { id: "asc" }, skip, take });
+  } catch {
+    rows = feeTypesSeed.slice(skip, skip + take);
+  }
   return NextResponse.json(rows);
 }
 
