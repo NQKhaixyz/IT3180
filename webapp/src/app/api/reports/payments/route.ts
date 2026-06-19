@@ -13,7 +13,7 @@ function toCsvValue(value: unknown): string {
 export async function GET(req: NextRequest) {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
-  const deny = requirePermission(auth.user!, "REPORT", "READ");
+  const deny = requirePermission(auth.user!, "FEE", "READ");
   if (deny) return deny;
 
   const { searchParams } = new URL(req.url);

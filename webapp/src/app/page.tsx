@@ -2206,89 +2206,88 @@ export default function Home() {
             <section className="card">
               <h2 className="subtitle">{t(lang, "reports")}</h2>
               <div className="flex gap-2 mt-2">
-                <button className="btn-secondary" onClick={downloadPaymentsCsv}>{l(lang, "Xuất thu phí CSV", "Export payments CSV")}</button>
-                <button className="btn-secondary" onClick={downloadPaymentsPdf}>{l(lang, "Xuất thu phí PDF", "Export payments PDF")}</button>
-                <button className="btn-secondary" onClick={downloadResidencyCsv}>{l(lang, "Xuất cư trú CSV", "Export residency CSV")}</button>
-                <button className="btn-secondary" onClick={downloadResidencyPdf}>{l(lang, "Xuất cư trú PDF", "Export residency PDF")}</button>
-                <button className="btn-secondary" onClick={() => downloadDebtSummaryCsv()}>{l(lang, "Xuất công nợ CSV", "Export debt CSV")}</button>
-                <button className="btn-secondary" onClick={() => downloadDebtSummaryPdf()}>{l(lang, "Xuất công nợ PDF", "Export debt PDF")}</button>
+                {canPermission(user, "FEE", "READ") && <button className="btn-secondary" onClick={downloadPaymentsCsv}>{l(lang, "Xuất thu phí CSV", "Export payments CSV")}</button>}
+                {canPermission(user, "FEE", "READ") && <button className="btn-secondary" onClick={downloadPaymentsPdf}>{l(lang, "Xuất thu phí PDF", "Export payments PDF")}</button>}
+                {canPermission(user, "RESIDENT", "READ") && <button className="btn-secondary" onClick={downloadResidencyCsv}>{l(lang, "Xuất cư trú CSV", "Export residency CSV")}</button>}
+                {canPermission(user, "RESIDENT", "READ") && <button className="btn-secondary" onClick={downloadResidencyPdf}>{l(lang, "Xuất cư trú PDF", "Export residency PDF")}</button>}
+                {canPermission(user, "FEE", "READ") && <button className="btn-secondary" onClick={() => downloadDebtSummaryCsv()}>{l(lang, "Xuất công nợ CSV", "Export debt CSV")}</button>}
+                {canPermission(user, "FEE", "READ") && <button className="btn-secondary" onClick={() => downloadDebtSummaryPdf()}>{l(lang, "Xuất công nợ PDF", "Export debt PDF")}</button>}
               </div>
-              <div className="grid gap-4 md:grid-cols-2 mt-3">
-                <BarChart title={l(lang, "Tỉ lệ thu theo từng tháng (%)", "Collection rate by month (%)")} data={(analytics?.collectionByMonth ?? []).map((x) => ({ label: x.label, value: x.rate }))} color="linear-gradient(90deg,#2b8a3e,#46b95e)" maxBars={8} />
-                <BarChart title={l(lang, "Nợ theo số ngày trễ hạn đóng tiền", "Overdue debt by late-payment days")} data={(analytics?.aging ?? []).map((x) => ({ label: x.label, value: x.amount }))} color="linear-gradient(90deg,#d96b41,#ee9c5f)" formatter={formatVnd} maxBars={8} />
-              </div>
-
-              <div className="card mt-3">
-                <h3 className="subtitle">{l(lang, "Bộ cột hiển thị (báo cáo)", "Report column visibility")}</h3>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {Object.keys(showReportPaymentColumns).map((key) => (
-                    <button key={key} className={`btn-chip ${showReportPaymentColumns[key] ? "active" : ""}`} onClick={() => setShowReportPaymentColumns((prev) => ({ ...prev, [key]: !prev[key] }))}>{key}</button>
-                  ))}
+              {canPermission(user, "FEE", "READ") && <>
+                <div className="grid gap-4 md:grid-cols-2 mt-3">
+                  <BarChart title={l(lang, "Tỉ lệ thu theo từng tháng (%)", "Collection rate by month (%)")} data={(analytics?.collectionByMonth ?? []).map((x) => ({ label: x.label, value: x.rate }))} color="linear-gradient(90deg,#2b8a3e,#46b95e)" maxBars={8} />
+                  <BarChart title={l(lang, "Nợ theo số ngày trễ hạn đóng tiền", "Overdue debt by late-payment days")} data={(analytics?.aging ?? []).map((x) => ({ label: x.label, value: x.amount }))} color="linear-gradient(90deg,#d96b41,#ee9c5f)" formatter={formatVnd} maxBars={8} />
                 </div>
-              </div>
-
-              {paymentView.length === 0 ? (
-                <div className="empty-state mt-3">{l(lang, "Không có giao dịch phù hợp bộ lọc", "No payments match current filters")}</div>
-              ) : (
-                <div className="table-wrap mt-3">
-                  <table>
-                    <thead>
-                      <tr>
-                        {showReportPaymentColumns.receipt && <th>{t(lang, "receiptNo")}</th>}
-                        {showReportPaymentColumns.period && <th>{t(lang, "period")}</th>}
-                        {showReportPaymentColumns.fee && <th>{t(lang, "name")}</th>}
-                        {showReportPaymentColumns.amount && <th>{t(lang, "amount")}</th>}
-                        {showReportPaymentColumns.method && <th>{t(lang, "method")}</th>}
-                        {showReportPaymentColumns.collector && <th>{t(lang, "collector")}</th>}
-                        {showReportPaymentColumns.payer && <th>{l(lang, "Người nộp", "Payer")}</th>}
-                        {showReportPaymentColumns.txRef && <th>{l(lang, "Mã GD", "Tx Ref")}</th>}
-                        {showReportPaymentColumns.note && <th>{l(lang, "Ghi chú", "Note")}</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pagedReportPayments.map((p) => {
-                        const o = obligationById.get(p.obligationId);
-                        const period = o ? periodById.get(o.periodId) : null;
-                        const ft = feeTypeByIdMap.get(p.feeTypeId);
-                        return (
-                          <tr key={p.id}>
-                            {showReportPaymentColumns.receipt && <td>{p.receiptNo}</td>}
-                            {showReportPaymentColumns.period && <td>{period?.month}/{period?.year}</td>}
-                            {showReportPaymentColumns.fee && <td>{ft?.name}</td>}
-                            {showReportPaymentColumns.amount && <td>{formatVnd(p.paidAmount)}</td>}
-                            {showReportPaymentColumns.method && <td>{p.method}</td>}
-                            {showReportPaymentColumns.collector && <td>{p.collectorName}</td>}
-                            {showReportPaymentColumns.payer && <td>{p.payerName || "-"}</td>}
-                            {showReportPaymentColumns.txRef && <td>{p.bankTxRef || "-"}</td>}
-                            {showReportPaymentColumns.note && <td>{p.note || "-"}</td>}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                <div className="card mt-3">
+                  <h3 className="subtitle">{l(lang, "Bộ cột hiển thị (báo cáo)", "Report column visibility")}</h3>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {Object.keys(showReportPaymentColumns).map((key) => (
+                      <button key={key} className={`btn-chip ${showReportPaymentColumns[key] ? "active" : ""}`} onClick={() => setShowReportPaymentColumns((prev) => ({ ...prev, [key]: !prev[key] }))}>{key}</button>
+                    ))}
+                  </div>
                 </div>
-              )}
-              <div className="flex gap-2 mt-2">
-                <button className="btn-secondary" disabled={pageReportPayments <= 1} onClick={() => setPageReportPayments((p) => Math.max(1, p - 1))}>{l(lang, "Trước", "Prev")}</button>
-                <button className="btn-secondary" disabled={pageReportPayments * pageSize >= paymentView.length} onClick={() => setPageReportPayments((p) => p + 1)}>{l(lang, "Sau", "Next")}</button>
-                <span className="muted">{l(lang, "Trang", "Page")} {pageReportPayments}/{totalReportPaymentPages}</span>
-                <input className="input" style={{ width: 96 }} type="number" min={1} max={totalReportPaymentPages} value={pageReportPayments} onChange={(e) => {
-                  const next = Number(e.target.value);
-                  if (!Number.isFinite(next)) return;
-                  setPageReportPayments(Math.min(totalReportPaymentPages, Math.max(1, Math.trunc(next))));
-                }} />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2 mt-3">
-                <article className="card">
-                  <h3 className="subtitle">{l(lang, "Top người thu", "Top collectors")}</h3>
-                  {(analytics?.byCollector ?? []).slice(0, 6).map((x) => <p className="muted mt-1" key={x.collector}>{x.collector}: {formatVnd(x.amount)}</p>)}
-                </article>
-                <article className="card">
-                  <h3 className="subtitle">{l(lang, "Hiệu quả theo tầng", "Collection by floor")}</h3>
-                  {(analytics?.byFloor ?? []).slice(0, 8).map((x) => <p className="muted mt-1" key={x.floor}>{l(lang, "Tầng", "Floor")} {x.floor}: {x.rate}%</p>)}
-                </article>
-              </div>
+                {paymentView.length === 0 ? (
+                  <div className="empty-state mt-3">{l(lang, "Không có giao dịch phù hợp bộ lọc", "No payments match current filters")}</div>
+                ) : (
+                  <div className="table-wrap mt-3">
+                    <table>
+                      <thead>
+                        <tr>
+                          {showReportPaymentColumns.receipt && <th>{t(lang, "receiptNo")}</th>}
+                          {showReportPaymentColumns.period && <th>{t(lang, "period")}</th>}
+                          {showReportPaymentColumns.fee && <th>{t(lang, "name")}</th>}
+                          {showReportPaymentColumns.amount && <th>{t(lang, "amount")}</th>}
+                          {showReportPaymentColumns.method && <th>{t(lang, "method")}</th>}
+                          {showReportPaymentColumns.collector && <th>{t(lang, "collector")}</th>}
+                          {showReportPaymentColumns.payer && <th>{l(lang, "Người nộp", "Payer")}</th>}
+                          {showReportPaymentColumns.txRef && <th>{l(lang, "Mã GD", "Tx Ref")}</th>}
+                          {showReportPaymentColumns.note && <th>{l(lang, "Ghi chú", "Note")}</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pagedReportPayments.map((p) => {
+                          const o = obligationById.get(p.obligationId);
+                          const period = o ? periodById.get(o.periodId) : null;
+                          const ft = feeTypeByIdMap.get(p.feeTypeId);
+                          return (
+                            <tr key={p.id}>
+                              {showReportPaymentColumns.receipt && <td>{p.receiptNo}</td>}
+                              {showReportPaymentColumns.period && <td>{period?.month}/{period?.year}</td>}
+                              {showReportPaymentColumns.fee && <td>{ft?.name}</td>}
+                              {showReportPaymentColumns.amount && <td>{formatVnd(p.paidAmount)}</td>}
+                              {showReportPaymentColumns.method && <td>{p.method}</td>}
+                              {showReportPaymentColumns.collector && <td>{p.collectorName}</td>}
+                              {showReportPaymentColumns.payer && <td>{p.payerName || "-"}</td>}
+                              {showReportPaymentColumns.txRef && <td>{p.bankTxRef || "-"}</td>}
+                              {showReportPaymentColumns.note && <td>{p.note || "-"}</td>}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div className="flex gap-2 mt-2">
+                  <button className="btn-secondary" disabled={pageReportPayments <= 1} onClick={() => setPageReportPayments((p) => Math.max(1, p - 1))}>{l(lang, "Trước", "Prev")}</button>
+                  <button className="btn-secondary" disabled={pageReportPayments * pageSize >= paymentView.length} onClick={() => setPageReportPayments((p) => p + 1)}>{l(lang, "Sau", "Next")}</button>
+                  <span className="muted">{l(lang, "Trang", "Page")} {pageReportPayments}/{totalReportPaymentPages}</span>
+                  <input className="input" style={{ width: 96 }} type="number" min={1} max={totalReportPaymentPages} value={pageReportPayments} onChange={(e) => {
+                    const next = Number(e.target.value);
+                    if (!Number.isFinite(next)) return;
+                    setPageReportPayments(Math.min(totalReportPaymentPages, Math.max(1, Math.trunc(next))));
+                  }} />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 mt-3">
+                  <article className="card">
+                    <h3 className="subtitle">{l(lang, "Top người thu", "Top collectors")}</h3>
+                    {(analytics?.byCollector ?? []).slice(0, 6).map((x) => <p className="muted mt-1" key={x.collector}>{x.collector}: {formatVnd(x.amount)}</p>)}
+                  </article>
+                  <article className="card">
+                    <h3 className="subtitle">{l(lang, "Hiệu quả theo tầng", "Collection by floor")}</h3>
+                    {(analytics?.byFloor ?? []).slice(0, 8).map((x) => <p className="muted mt-1" key={x.floor}>{l(lang, "Tầng", "Floor")} {x.floor}: {x.rate}%</p>)}
+                  </article>
+                </div>
+              </>}
             </section>
           )}
 

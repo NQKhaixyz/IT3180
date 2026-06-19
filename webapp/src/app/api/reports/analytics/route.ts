@@ -11,7 +11,7 @@ function diffDays(from: Date, to: Date): number {
 export async function GET() {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
-  const deny = requirePermission(auth.user!, "REPORT", "READ");
+  const deny = requirePermission(auth.user!, "FEE", "READ");
   if (deny) return deny;
 
   const [obligations, payments, feeTypes, households] = await Promise.all([
