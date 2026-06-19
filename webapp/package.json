@@ -9,6 +9,7 @@
     "postinstall": "prisma generate",
     "lint": "eslint",
     "test:e2e:smoke": "node scripts/e2e-regression.mjs",
+    "test:api:period-obligation-link": "node scripts/test-period-obligation-link.mjs",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev --name init",
